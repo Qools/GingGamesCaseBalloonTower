@@ -11,6 +11,6 @@ public class Balloon : MonoBehaviour
     // Start is called before the first frame update
     void FixedUpdate()
     {
-        balloonRb.AddForce(Vector3.up * upForce, ForceMode.Force);
+        balloonRb.AddForce(-Physics.gravity * upForce, ForceMode.Force);
     }
 }
