@@ -1,6 +1,7 @@
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using DG.Tweening;
 
 public class BalloonSpawner : MonoBehaviour
 {
@@ -9,19 +10,38 @@ public class BalloonSpawner : MonoBehaviour
 
     [SerializeField] private Transform balloonHolder;
 
-    // Update is called once per frame
-    void Update()
+    public float spawnRate = 1f;
+    public float fillTime = 1f;
+
+    public int maxBalloonNumbers;
+    private int spawnedBalloonNumbers = 0;
+
+    private void Start()
     {
-        if (Input.GetKeyDown(KeyCode.Space))
+        InvokeRepeating(nameof(SpawnBalloon), spawnRate, spawnRate);
+    }
+
+    public void SpawnBalloon()
+    {
+        Rigidbody rb = balloonConnectorPrefab.GetComponent<Rigidbody>();
+
+        GameObject balloon = Instantiate(balloonPrefab, transform.position, Quaternion.identity);
+        var joint = balloon.GetComponent<ConfigurableJoint>();
+
+        spawnedBalloonNumbers++;
+
+        FillBalloon(balloon, joint, rb);
+
+        if (spawnedBalloonNumbers >= maxBalloonNumbers)
         {
-            GameObject connector = Instantiate(balloonConnectorPrefab, transform.position, Quaternion.identity, balloonHolder);
-            Rigidbody rb = connector.GetComponent<Rigidbody>();
-
-            GameObject balloon = Instantiate(balloonPrefab, transform.position, Quaternion.identity);
-            ConfigurableJoint joint = balloon.GetComponent<ConfigurableJoint>();
-
-            joint.connectedBody = rb;
-
+            CancelInvoke(nameof(SpawnBalloon));
         }
+    }
+    public void FillBalloon(GameObject balloon, ConfigurableJoint joint, Rigidbody rb)
+    {
+        balloon.transform.DOScale(Vector3.one, fillTime).OnComplete(() => 
+        { 
+            joint.connectedBody = rb;
+        });
     }
 }
